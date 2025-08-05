@@ -36,8 +36,9 @@ def anonymize_all_faces(original_image, face_detection):
             copy_original_image = original_image.copy()
             copy_original_image[y:y + height, x:x + width, :] = cv2.blur(original_image[y:y + height, x:x + width, :],
                                                                          (50, 50))
-    except TypeError:
-        print("None Type Error: There is no face on image.")
+    except Exception as error:
+        print(f"Error: {error}")
+        return None
 
     return copy_original_image
 
@@ -49,6 +50,8 @@ def anonymize_all_faces(original_image, face_detection):
 args_for_anonymizer = argparse.ArgumentParser()
 args_for_anonymizer.add_argument("--mode", default="video")
 args_for_anonymizer.add_argument("--filePath", default="D:/images/testVideo.mp4")
+# args_for_anonymizer.add_argument("--mode", default="image")
+# args_for_anonymizer.add_argument("--filePath", default="D:/images/text.png")
 args_for_anonymizer = args_for_anonymizer.parse_args()
 
 output_path = "D:/images/output"
@@ -60,20 +63,20 @@ if not os.path.exists(output_path):
 ##########################################
 
 face_detection = mp.solutions.face_detection
-with face_detection.FaceDetection(model_selection=0, min_detection_confidence=.9) as face_detection:
+with face_detection.FaceDetection(model_selection=0, min_detection_confidence=.7) as face_detection:
     if args_for_anonymizer.mode in ["image"]:
         original_image = cv2.imread(args_for_anonymizer.filePath)
         anonymizer_result = anonymize_all_faces(original_image, face_detection)
 
-        cv2.imshow('Image', anonymizer_result)
-        cv2.waitKey(0);
-        cv2.destroyAllWindows()
+        if anonymizer_result is not None:
+            cv2.imshow('Image', anonymizer_result)
+            cv2.waitKey(0); cv2.destroyAllWindows()
 
-        ##########################################
-        #          Write image by path           #
-        ##########################################
+            ##########################################
+            #          Write image by path           #
+            ##########################################
 
-        cv2.imwrite(os.path.join(output_path, 'BluredImage.jpg'), anonymizer_result)
+            cv2.imwrite(os.path.join(output_path, 'BluredImage.jpg'), anonymizer_result)
 
     elif args_for_anonymizer.mode in ["video"]:
         video = cv2.VideoCapture(args_for_anonymizer.filePath)
