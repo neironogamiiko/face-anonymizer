@@ -35,10 +35,10 @@ def anonymize_all_faces(original_image, face_detection):
             # Bluring by replacement face with blured rectangle
             copy_original_image = original_image.copy()
             copy_original_image[y:y + height, x:x + width, :] = cv2.blur(original_image[y:y + height, x:x + width, :],
-                                                                         (50, 50))
+                                                                         (100, 100))
     except Exception as error:
         print(f"Error: {error}")
-        return None
+        return original_image
 
     return copy_original_image
 
@@ -48,10 +48,14 @@ def anonymize_all_faces(original_image, face_detection):
 ##########################################
 
 args_for_anonymizer = argparse.ArgumentParser()
-args_for_anonymizer.add_argument("--mode", default="video")
-args_for_anonymizer.add_argument("--filePath", default="D:/images/testVideo.mp4")
+# args_for_anonymizer.add_argument("--mode", default="video")
+# args_for_anonymizer.add_argument("--filePath", default="D:/images/anotherTest.mp4")
+
 # args_for_anonymizer.add_argument("--mode", default="image")
 # args_for_anonymizer.add_argument("--filePath", default="D:/images/text.png")
+
+args_for_anonymizer.add_argument("--mode", default="webcamera")
+
 args_for_anonymizer = args_for_anonymizer.parse_args()
 
 output_path = "D:/images/output"
@@ -97,3 +101,18 @@ with face_detection.FaceDetection(model_selection=0, min_detection_confidence=.7
             ret, frame = video.read()
 
         video.release(); output_video.release()
+
+    elif args_for_anonymizer.mode in ["webcamera"]:
+        webcam = cv2.VideoCapture(0)
+        ret, frame = webcam.read()
+
+        while True:
+            frame = anonymize_all_faces(frame, face_detection)
+            cv2.imshow("Webcamera", frame)
+
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+
+            ret, frame = webcam.read()
+
+        webcam.release(); cv2.destroyAllWindows()
